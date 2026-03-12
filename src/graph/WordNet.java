@@ -1,7 +1,5 @@
 package graph;
 
-import org.antlr.v4.runtime.tree.Tree;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -19,8 +17,8 @@ public class WordNet {
     // int -> set of int
     // look up int -> words in synsets table
 
-    TreeMap<Integer, TreeSet<Integer>> graph;
-    Synset table;
+    public TreeMap<Integer, TreeSet<Integer>> graph;
+    public Synset table;
 
     /**
      * Creates a WordNet obj with empty graph
@@ -51,7 +49,13 @@ public class WordNet {
                     wordz[i] = Integer.parseInt(words[i]);
                 }
                 TreeSet<Integer> hypo = new TreeSet<>(List.of(wordz));
-                graph.put(Integer.parseInt(tokens[0]), hypo);
+                int i = Integer.parseInt(tokens[0]);
+                if (graph.get(i) == null) graph.put(i, hypo);
+                else {
+                    TreeSet<Integer> set = graph.get(i);
+                    set.addAll(hypo);
+                    graph.put(i, set);
+                }
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -59,12 +63,37 @@ public class WordNet {
     }
 
     /**
+     * get the set of words contained in the current node
+     * @param i index of the current node
+     * @return a TreeSet of words that are in the current node
+     */
+    public TreeSet<String> get(int i) {
+        return table.get(i);
+    }
+
+    /**
      * Get the direct hyponyms of node i represented in a TreeSet
      * @param i dataset index of the current (parent) node
      * @return a TreeSet of hyponym Synset(s)
      */
-    public TreeSet<Synset> get(int i) {
-        return null;
+    public TreeSet<String> getChildWords(int i) {
+        TreeSet<String> set = new TreeSet<>();
+        for (int index : graph.get(i)) {
+            set.addAll(table.get(index));
+        }
+        return set;
+    }
+
+    public TreeSet<Integer> getChildKeys(int i) {
+        return graph.get(i);
+    }
+
+    /**
+     * get indices containing given word
+     * @param word word to search for
+     */
+    public String getIndices(String word) {
+return null;
     }
 
     /**

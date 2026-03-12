@@ -1,4 +1,5 @@
 import graph.Synset;
+import graph.WordNet;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
@@ -80,5 +81,25 @@ public class TestGraph {
         assertThat(largeset.getIndices("zymosis")).contains(82191);
         // i don't really know what these words belong to so only testing one index
         // finished in around 720ms for 82191 entries, pretty fast
+    }
+
+    @Test
+    public void testGrpahIOGetChild() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets11.txt");
+        assertThat(net).isNotNull();
+        assertThat(net.graph).isNotNull();
+        assertThat(net.graph).isNotEmpty();
+        assertThat(net.table).isNotNull();
+
+        assertThat(net.getChildKeys(0)).containsExactly(1, 6, 14);
+        assertThat(net.getChildKeys(11)).containsExactly(12, 13);
+    }
+
+    @Test
+    public void testGraphGet() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets11.txt");
+        assertThat(net.get(0)).containsExactly("action");
+        assertThat(net.get(1)).containsExactly("change");
+        assertThat(net.get(11)).isEmpty();
     }
 }
