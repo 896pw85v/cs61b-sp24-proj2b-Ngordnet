@@ -2,11 +2,7 @@ package graph;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Represents a directed graph of hyponym relationships.
@@ -16,12 +12,16 @@ import java.util.TreeSet;
 public class WordNet {
     // int -> set of int
     // look up int -> words in synsets table
+    // for outside world this is not a graph class. So ultimate api is:
+    // String word -> String words[] of all hyponyms
+    // String words[] -> words[] all common hyponyms
 
     public TreeMap<Integer, TreeSet<Integer>> graph;
     public Synset table;
 
     /**
-     * Creates a WordNet obj with empty graph
+     * Creates a WordNet obj with empty graph.
+     * Don't think this is needed, but still want to provide an empty constructor.
      */
     public WordNet() {
         graph = new TreeMap<>();
@@ -72,38 +72,56 @@ public class WordNet {
     }
 
     /**
-     * Get the direct hyponyms of node i represented in a TreeSet
-     * @param i dataset index of the current (parent) node
-     * @return a TreeSet of hyponym Synset(s)
+     * simply returns the child indices of the current index
+     * @param i the current (parent) index
+     * @return a set of integers that are indices to the child nodes
      */
-    public TreeSet<String> getChildWords(int i) {
-        TreeSet<String> set = new TreeSet<>();
-        for (int index : graph.get(i)) {
-            set.addAll(table.get(index));
-        }
-        return set;
-    }
-
     public TreeSet<Integer> getChildKeys(int i) {
+        if (!graph.containsKey(i)) return new TreeSet<>();
         return graph.get(i);
     }
 
     /**
-     * get indices containing given word
-     * @param word word to search for
+     * a recursive approach that gets all the hyponyms in words not indices. Does not include
+     * the current index, ordered in the order of the words being added to the list. Strictly
+     * node (synset) based.
+     * @param i the current (parent) node index
+     * @return a list (ArrayList) of strings that are hyponyms of the current (parent) node
      */
-    public String getIndices(String word) {
-return null;
+    public List<String> getHyponyms(int i) {
+
+        List<String> list = new ArrayList<>();
+        for (int child : this.getChildKeys(i)) {
+            list.addAll(table.get(child)); // adding all words in current node
+            list.addAll(this.getHyponyms(child)); // adding all the words in the child nodes, recursively
+        }
+        return list;
+    }
+
+    /**
+     * Provided a word, searches for the hyponyms of this word, including every synset this word belongs to
+     * @param word word to search for
+     * @return a list (ArrayList) containing all hyponyms of the word
+     */
+    public List<String> hyponyms(String word) {
+        List<String> list = new ArrayList<>();
+        for (int i : table.getIndices(word)) { // every node containing word
+            list.addAll(this.getHyponyms(i));
+        }
+        return list;
     }
 
     /**
      * Returns whether node i points to node j in a single direction
      * @param i the starting node
      * @param j the target node
-     * @return boolean value true if i points to j, vice versa
+     * @return boolean value true if j is a child of i, vice versa
      */
     public boolean isConnected(int i, int j) {
-        return false;
+        if (this.getChildKeys(i).contains(j)) return true;
+        boolean connected = false;
+        for (int child : this.getChildKeys(i)) connected = connected || isConnected(child, j);
+        return connected;
     }
 
 }

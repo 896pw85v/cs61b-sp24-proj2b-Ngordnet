@@ -49,15 +49,25 @@ public class Synset {
         if (syns == null) return;
 //        if (table.containsKey(i)) table.get(i).addAll(List.of(syns)); // under same index
         // actually this whole line is unnecessary, cuz synset dataset is single line
-        // but good idea as a api
+        // but good idea as an api
         table.put(i, new TreeSet<>(List.of(syns)));
         size++;
     }
 
+    /**
+     * get words in the synset of the provided index
+     * @param i the index of the synset
+     * @return the words contained in the synset indexed i
+     */
     public TreeSet<String> get(Integer i) {
         return table.get(i) == null ? new TreeSet<>() : table.get(i);
     }
 
+    /**
+     * get TreeSet of integer indices for every synset containing word
+     * @param word the word that needs to look up for indices
+     * @return a set of indices to synsets that contains the word
+     */
     public TreeSet<Integer> getIndices(String word) {
         if (word == null) return new TreeSet<>();
         TreeSet<Integer> indices = new TreeSet<>();

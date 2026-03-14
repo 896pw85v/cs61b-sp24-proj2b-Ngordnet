@@ -21,7 +21,7 @@ public class TestGraph {
     }
 
     @Test
-    public void testGet() {
+    public void testTableGet() {
         synset.addSynset(1, "you", "me");
 
         assertThat(synset).isNotNull();
@@ -43,6 +43,13 @@ public class TestGraph {
         assertThat(synset.getIndices("you")).containsExactly(1, 2);
 
         assertThat(synset.getIndices("unrelated")).isEmpty();
+    }
+
+    @Test
+    public void testWordNetEmpty() {
+        WordNet net = new WordNet();
+        assertThat(net.graph).isEmpty();
+        assertThat(net.table.get(0)).isEmpty();
     }
 
     @Test
@@ -101,5 +108,43 @@ public class TestGraph {
         assertThat(net.get(0)).containsExactly("action");
         assertThat(net.get(1)).containsExactly("change");
         assertThat(net.get(11)).isEmpty();
+    }
+
+    @Test
+    public void testGetChildKeys() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets11.txt");
+        assertThat(net.getChildKeys(0)).containsExactly(1, 6, 14);
+        assertThat(net.getChildKeys(1)).containsExactly(2, 11);
+        assertThat(net.getChildKeys(11)).containsExactly(12, 13);
+        assertThat(net.get(17)).isEmpty();
+    }
+
+
+    @Test
+    public void testGetHyponyms() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets16.txt");
+        assertThat(net.getHyponyms(8)).containsExactly("demotion", "variation");
+        assertThat(net.getHyponyms(6)).containsExactly("action", "change", "demotion", "variation");
+        assertThat(net.getHyponyms(100)).isEmpty();
+    }
+
+    @Test
+    public void testHyponyms() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets16.txt");
+        assertThat(net.hyponyms("act")).containsExactly("action", "change", "demotion", "variation");
+        assertThat(net.hyponyms("human action")).containsExactly("action", "change", "demotion", "variation");
+        assertThat(net.hyponyms("doesn't even exists in the set")).isEmpty();
+    }
+
+    @Test
+    public void testIsConnected() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets16.txt");
+        assertThat(net.isConnected(0, 1)).isTrue();
+        assertThat(net.isConnected(1, 0)).isFalse();
+        assertThat(net.isConnected(0, 14)).isTrue();
+        assertThat(net.isConnected(0, 5)).isTrue(); // 0 - 1 - 2 - 3 - 5
+        assertThat(net.isConnected(1, 14)).isFalse();
+        assertThat(net.isConnected(100, 101)).isFalse();
+        assertThat(net.isConnected(101, 100)).isFalse();
     }
 }
