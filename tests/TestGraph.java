@@ -2,9 +2,6 @@ import graph.Synset;
 import graph.WordNet;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileNotFoundException;
-import java.util.TreeSet;
-
 import static com.google.common.truth.Truth.assertThat;
 
 public class TestGraph {
@@ -86,12 +83,12 @@ public class TestGraph {
         assertThat(largeset.getIndices("derivative")).contains(34695);
         assertThat(largeset.getIndices("propulsion")).contains(63362);
         assertThat(largeset.getIndices("zymosis")).contains(82191);
-        // i don't really know what these words belong to so only testing one index
+        // I don't really know what these words belong to so only testing one index
         // finished in around 720ms for 82191 entries, pretty fast
     }
 
     @Test
-    public void testGrpahIOGetChild() {
+    public void testGraphIOGetChild() {
         WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets11.txt");
         assertThat(net).isNotNull();
         assertThat(net.graph).isNotNull();
@@ -131,9 +128,14 @@ public class TestGraph {
     @Test
     public void testHyponyms() {
         WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets16.txt");
-        assertThat(net.hyponyms("act")).containsExactly("action", "change", "demotion", "variation");
-        assertThat(net.hyponyms("human action")).containsExactly("action", "change", "demotion", "variation");
+        assertThat(net.hyponyms("change")).containsExactly("alteration", "change", "demotion", "increase", "jump", "leap", "modification", "saltation", "transition", "variation");
         assertThat(net.hyponyms("doesn't even exists in the set")).isEmpty();
+    }
+
+    @Test
+    public void testHyponymsDoc() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets16.txt");
+        assertThat(net.hyponyms("change")).isInOrder();
     }
 
     @Test
@@ -146,5 +148,22 @@ public class TestGraph {
         assertThat(net.isConnected(1, 14)).isFalse();
         assertThat(net.isConnected(100, 101)).isFalse();
         assertThat(net.isConnected(101, 100)).isFalse();
+    }
+
+    @Test
+    public void testHyponymsWords() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms16.txt", "data/data/wordnet/synsets16.txt");
+        assertThat(net.hyponyms("change", "occurrence")).containsExactly("alteration", "change", "increase", "jump", "leap", "modification", "saltation", "transition");
+        assertThat(net.hyponyms("event", "change" )).containsExactly("alteration", "change", "demotion", "increase", "jump", "leap", "modification", "saltation", "transition", "variation");
+        assertThat(net.hyponyms("change", "alteration")).containsExactly("alteration", "change", "increase", "jump", "leap", "modification", "saltation", "transition");
+
+    }
+
+    @Test
+    public void bigTest() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms.txt", "data/data/wordnet/synsets.txt");
+        assertThat(net.hyponyms("video", "recording")).containsExactly("video", "video recording", "videocassette", "videotape");
+        assertThat(net.hyponyms("tart", "pastry")).containsExactly("apple tart", "lobster tart", "quiche", "quiche Lorraine", "tart", "tartlet");
+
     }
 }

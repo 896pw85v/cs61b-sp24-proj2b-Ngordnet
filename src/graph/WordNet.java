@@ -11,10 +11,10 @@ import java.util.*;
  */
 public class WordNet {
     // int -> set of int
-    // look up int -> words in synsets table
+    // look up int -> words in synsets table, handled by Synset
     // for outside world this is not a graph class. So ultimate api is:
-    // String word -> String words[] of all hyponyms
-    // String words[] -> words[] all common hyponyms
+    // - String word -> String words[] of all hyponyms
+    // - String words[] -> words[] all common hyponyms
 
     public TreeMap<Integer, TreeSet<Integer>> graph;
     public Synset table;
@@ -29,7 +29,8 @@ public class WordNet {
     }
 
     /**
-     * Create a WordNet obj by reading the txt files at the provided path
+     * Create a WordNet obj by reading the txt files at the provided path.
+     * Runtime would simply be M + N, size of the two dataset
      * @param path that points to the hyponym data set
      * @param tablePath that points to the set of words
      * @author me
@@ -104,23 +105,64 @@ public class WordNet {
      * @return a list (ArrayList) containing all hyponyms of the word
      */
     public List<String> hyponyms(String word) {
-        List<String> list = new ArrayList<>();
+        Set<String> set = new TreeSet<>();
         for (int i : table.getIndices(word)) { // every node containing word
-            list.addAll(this.getHyponyms(i));
+            set.addAll(this.get(i));
+            set.addAll(this.getHyponyms(i));
         }
+        List<String> list = new ArrayList<>(set);
+        list.sort(new WComparator());
         return list;
     }
 
     /**
-     * Returns whether node i points to node j in a single direction
+     * em helper class to alphabetically sort the lists
+     */
+    public static class WComparator implements Comparator<String> {
+        @Override
+        public int compare(String o1, String o2) {
+            return o1.compareTo(o2);
+        }
+    }
+
+    /**
+     * Get a list of words that are hyponyms of all the provided words, regardless of meaning.
+     * List is constructed by taking the common subset of every hyponym set, therefore order
+     * of words passed in is unrelated, list will be unique eventually. Creates N hyponym set
+     * for N input words, and compares every word inside every set. If total size of the N sets
+     * is M, would compare and add about 2M times. I don't think there's a way to make it faster.
+     * <b>Additonally</b>, this method itself cannot deal with k value.
+     * @param words the words to find common hyponyms
+     * @return list of hyponyms, would include the most common parent word, unless not related
+     */
+    public List<String> hyponyms(String... words) {
+        Set<String> set = new TreeSet<>(this.hyponyms(words[0]));
+        Set<String> temp = new TreeSet<>();
+        for (String word : words) {
+            for (String w : this.hyponyms(word)) {
+                if (set.contains(w)) temp.add(w);
+            }
+            set = temp;
+            temp = new TreeSet<>();
+        }
+        List<String> list = new ArrayList<>(set);
+        list.sort(new WComparator());
+        return list;
+    }
+
+    /**
+     * Returns whether node i points to node j in a single direction. Worst case runtime
+     * should be the whole graph. However， this method is not yet used in the implementation,
+     * due to the design not aligning with the actual problem and data structure.
      * @param i the starting node
      * @param j the target node
      * @return boolean value true if j is a child of i, vice versa
      */
     public boolean isConnected(int i, int j) {
-        if (this.getChildKeys(i).contains(j)) return true;
+        TreeSet<Integer> set = this.getChildKeys(i);
+        if (set.contains(j)) return true;
         boolean connected = false;
-        for (int child : this.getChildKeys(i)) connected = connected || isConnected(child, j);
+        for (int child : set) connected = connected || isConnected(child, j);
         return connected;
     }
 
