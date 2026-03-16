@@ -2,6 +2,9 @@ import graph.Synset;
 import graph.WordNet;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.google.common.truth.Truth.assertThat;
 
 public class TestGraph {
@@ -165,5 +168,12 @@ public class TestGraph {
         assertThat(net.hyponyms("video", "recording")).containsExactly("video", "video recording", "videocassette", "videotape");
         assertThat(net.hyponyms("tart", "pastry")).containsExactly("apple tart", "lobster tart", "quiche", "quiche Lorraine", "tart", "tartlet");
 
+    }
+
+    @Test
+    public void testNull() {
+        WordNet net = new WordNet("data/data/wordnet/hyponyms.txt", "data/data/wordnet/synsets.txt");
+        assertThat(net.hyponyms((String) null)).isEmpty();
+        assertThat(net.hyponyms((String[]) null)).isEmpty();
     }
 }

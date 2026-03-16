@@ -136,6 +136,7 @@ public class WordNet {
      * @return list of hyponyms, would include the most common parent word, unless not related
      */
     public List<String> hyponyms(String... words) {
+        if (words == null) return new ArrayList<>();
         Set<String> set = new TreeSet<>(this.hyponyms(words[0]));
         Set<String> temp = new TreeSet<>();
         for (String word : words) {
@@ -148,6 +149,18 @@ public class WordNet {
         List<String> list = new ArrayList<>(set);
         list.sort(new WComparator());
         return list;
+    }
+
+    /**
+     * Provide a new api for hyponyms, as the argument passed in can be either arrays, var-args, or List.
+     * Empty if passed in null.
+     * @param list a list of words to find hyponyms
+     * @return a list of String that consists of common hyponyms of the argument
+     */
+    public List<String> hyponyms(List<String> list) {
+        if (list == null) return new ArrayList<>();
+        String[] array = list.toArray(new String[0]);
+        return hyponyms(array);
     }
 
     /**
